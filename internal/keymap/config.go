@@ -26,6 +26,7 @@ var readlineOptions = map[string]interface{}{
 	"history-autosuggest":       false,
 	"multiline-column":          true,
 	"multiline-column-numbered": false,
+	"multiline-auto-indent":     true,
 }
 
 // ReloadConfig parses all valid .inputrc configurations and immediately

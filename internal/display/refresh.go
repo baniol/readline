@@ -35,8 +35,9 @@ func (e *Engine) Refresh() {
 
 	// Recompute coordinates with the new indentation/cursor position.
 	if e.line.Lines() > 0 {
-		e.cursorCol, e.cursorRow = core.CoordinatesCursor(e.cursor, e.startCols)
-		e.lineCol, e.lineRows = core.CoordinatesLine(e.line, e.startCols)
+		mlIndent := e.multilineIndent()
+		e.cursorCol, e.cursorRow = core.CoordinatesCursor(e.cursor, mlIndent)
+		e.lineCol, e.lineRows = core.CoordinatesLine(e.line, mlIndent)
 	}
 
 	// Ensure that we have enough space to print the line.
@@ -232,7 +233,7 @@ func (e *Engine) displayLineRefactored() {
 	line = strutil.FormatTabs(line) + term.ClearLineAfter
 	// And display the line.
 	e.suggested.Set([]rune(line)...)
-	core.DisplayLine(&e.suggested, e.startCols)
+	core.DisplayLine(&e.suggested, e.multilineIndent())
 }
 
 func (e *Engine) renderMultilineIndicators() {

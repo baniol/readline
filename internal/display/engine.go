@@ -188,13 +188,15 @@ func (e *Engine) computeCoordinates(suggested bool) {
 		e.startCols = e.prompt.LastUsed()
 	}
 
-	e.cursorCol, e.cursorRow = core.CoordinatesCursor(e.cursor, e.startCols)
+	mlIndent := e.multilineIndent()
+
+	e.cursorCol, e.cursorRow = core.CoordinatesCursor(e.cursor, mlIndent)
 
 	// Get the number of rows used by the line, and the end line X pos.
 	if e.opts.GetBool("history-autosuggest") && suggested {
-		e.lineCol, e.lineRows = core.CoordinatesLine(&e.suggested, e.startCols)
+		e.lineCol, e.lineRows = core.CoordinatesLine(&e.suggested, mlIndent)
 	} else {
-		e.lineCol, e.lineRows = core.CoordinatesLine(e.line, e.startCols)
+		e.lineCol, e.lineRows = core.CoordinatesLine(e.line, mlIndent)
 	}
 
 	e.primaryPrinted = false
@@ -229,13 +231,26 @@ func (e *Engine) displayLine() {
 
 	// And display the line.
 	e.suggested.Set([]rune(line)...)
-	core.DisplayLine(&e.suggested, e.startCols)
+	core.DisplayLine(&e.suggested, e.multilineIndent())
 
 	// Adjust the cursor if the line fits exactly in the terminal width.
 	if e.lineCol == 0 {
 		fmt.Print(term.NewlineReturn)
 		fmt.Print(term.ClearLineAfter)
 	}
+}
+
+// multilineIndent returns the column offset for continuation lines.
+// When "multiline-auto-indent" is false, continuation lines start at column 0.
+// Default is true (indent to prompt width) for backward compatibility.
+func (e *Engine) multilineIndent() int {
+	if e.line.Lines() == 0 {
+		return e.startCols
+	}
+	if !e.opts.GetBool("multiline-auto-indent") {
+		return 0
+	}
+	return e.startCols
 }
 
 // lineEndToCursorPos moves the cursor from the end of the input line
